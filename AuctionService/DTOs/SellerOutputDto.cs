@@ -3,9 +3,7 @@
     public class SellerOutputDto
     {
         public string FirstName { get; set; }
-        // TestForGit
-        //Another Changes
-        //another Things
-        //T1
+        public string? UserImageUrl { get; set; }
+
     }
 }

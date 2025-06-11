@@ -11,16 +11,20 @@ using AuctionService.Entities;
 using AuctionService.Enums;
 using AuctionService.Validators;
 using System.ComponentModel.DataAnnotations;
+using AuctionService.SignalRFolder;
+using Microsoft.AspNetCore.SignalR;
 
 public class BidService : IBidService
 {
     private readonly DataContext _context;
     private readonly IMapper _mapper;
+    private readonly IHubContext<AuctionHub> _hubContext;
 
-    public BidService(DataContext context, IMapper mapper)
+    public BidService(DataContext context, IMapper mapper, IHubContext<AuctionHub> hubContext)
     {
         _context = context;
         _mapper = mapper;
+        _hubContext = hubContext;
     }
 
     public async Task<BidOutputDto> PlaceBidAsync(int userId, BidCreateDto dto)
@@ -34,23 +38,25 @@ public class BidService : IBidService
             throw new ValidationException($"Validation failed: {errors}");
         }
 
-        // ✅ Get the auction and validate its state
         var auction = await _context.Auctions
             .Include(a => a.Item)
-            .Include(a => a.Bids)
+            .Include(a => a.Bids.OrderByDescending(b => b.BidTime)) // Order bids by time
             .FirstOrDefaultAsync(a => a.Id == dto.AuctionId);
 
         if (auction == null || auction.Status != AuctionStatus.Active)
             throw new InvalidOperationException("Auction not found or not active.");
 
-        // ✅ Prevent self-bidding
         if (auction.Item.SellerId == userId)
             throw new InvalidOperationException("You cannot bid on your own item.");
 
-        // ✅ Check if the bid amount is valid
         var minBidAmount = auction.CurrentPrice + auction.MinimumBidIncrement;
         if (dto.Amount < minBidAmount)
             throw new InvalidOperationException($"Bid amount must be at least {minBidAmount}.");
+
+        // 🔴 NEW: Prevent user from bidding again if they were the last bidder
+        var lastBid = auction.Bids.FirstOrDefault();
+        if (lastBid != null && lastBid.BidderId == userId)
+            throw new InvalidOperationException("You are already the highest bidder.");
 
         // ✅ Create the new bid
         var bid = new Bid
@@ -62,21 +68,32 @@ public class BidService : IBidService
             IsWinning = true
         };
 
-        // ✅ Update current price
         auction.CurrentPrice = bid.Amount;
 
-        // ✅ Mark previous winning bids as not winning
         foreach (var existingBid in auction.Bids.Where(b => b.IsWinning))
         {
             existingBid.IsWinning = false;
         }
 
         _context.Bids.Add(bid);
+
         await _context.SaveChangesAsync();
 
-        // ✅ Return the new bid as a DTO
+        // ✅ Notify all clients in that auction group
+        Console.WriteLine($"[DEBUG] Broadcasting ReceiveNewBid for auction-{auction.Id} → amount={bid.Amount}, bidder={bid.BidderId}");
+        await _hubContext.Clients
+            .Group($"auction-{auction.Id}")
+            .SendAsync("ReceiveNewBid", new
+            {
+                AuctionId = auction.Id,
+                Amount = bid.Amount,
+                BidderId = bid.BidderId,
+                BidTime = bid.BidTime
+            });
+
         return _mapper.Map<BidOutputDto>(bid);
     }
+
 
     public async Task<List<BidOutputDto>> GetAuctionBidsAsync(int auctionId)
     {

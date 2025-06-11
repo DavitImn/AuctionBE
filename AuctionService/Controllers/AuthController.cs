@@ -23,18 +23,15 @@ namespace AuctionService.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterRequestModel request)
+        [Consumes("multipart/form-data")]
+        public async Task<IActionResult> Register([FromForm] RegisterRequestModel request)
         {
-            try
-            {
-                var result = await _authService.RegisterAsync(request);
-                return Ok(new { message = result });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            await _authService.RegisterAsync(request); // ✅ logic inside service
+            return Ok("Registered");
         }
+
+
+
 
         [HttpPost("verify")]
         public async Task<IActionResult> Verify([FromQuery] string email, int verifyCode)

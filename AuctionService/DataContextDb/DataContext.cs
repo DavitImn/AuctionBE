@@ -14,6 +14,7 @@ namespace AuctionService.DataContextDb
         public DbSet<Bid> Bids { get; set; }
         public DbSet<JwtRefreshToken> jwtRefreshTokens { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<BuyNow> BuyNows { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -69,6 +70,19 @@ namespace AuctionService.DataContextDb
                 .WithMany(u => u.WonAuctions)
                 .HasForeignKey(a => a.WinnerId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // BuyNow → Auction
+            modelBuilder.Entity<BuyNow>()
+                .HasOne(bn => bn.Auction)
+                .WithMany() // You can also add navigation on Auction if needed
+                .HasForeignKey(bn => bn.AuctionId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<BuyNow>()
+                .HasOne(bn => bn.Buyer)
+                .WithMany(u => u.BuyNowPurchases)
+                .HasForeignKey(bn => bn.BuyerId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

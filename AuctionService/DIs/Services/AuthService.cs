@@ -17,12 +17,33 @@ namespace AuctionService.DIs.Services
         private readonly DataContext _context;
         private readonly ITokenService _tokenService;
         private readonly IEmailSenderService _emailSender;
+        private readonly IWebHostEnvironment _env;
 
-        public AuthService(DataContext context, ITokenService tokenService, IEmailSenderService emailSender)
+        public AuthService(DataContext context, ITokenService tokenService, IEmailSenderService emailSender, IWebHostEnvironment env)
         {
             _context = context;
             _tokenService = tokenService;
             _emailSender = emailSender;
+            _env = env;
+        }
+
+        public async Task<string> SaveUserImageAsync(IFormFile image)
+        {
+            var uploadPath = Path.Combine(_env.WebRootPath, "user-images");
+
+            if (!Directory.Exists(uploadPath))
+                Directory.CreateDirectory(uploadPath);
+
+            var uniqueFileName = $"{Guid.NewGuid()}{Path.GetExtension(image.FileName)}";
+            var filePath = Path.Combine(uploadPath, uniqueFileName);
+
+            using (var stream = new FileStream(filePath, FileMode.Create))
+            {
+                await image.CopyToAsync(stream);
+            }
+
+            var imageUrl = $"/user-images/{uniqueFileName}"; // relative URL to be served via wwwroot
+            return imageUrl;
         }
 
         public async Task<string> RegisterAsync(RegisterRequestModel request)
@@ -44,6 +65,8 @@ namespace AuctionService.DIs.Services
 
             int random = new Random().Next(1000, 9999);
 
+            var imageUrl = await SaveUserImageAsync(request.UserImage);
+
             var user = new User
             {
                 Email = request.Email,
@@ -53,7 +76,8 @@ namespace AuctionService.DIs.Services
                 LastName = request.LastName,
                 Role = Enums.Roles.Customer,
                 IsEmailConfirmed = false,
-                VerifyCode = random
+                VerifyCode = random,
+                UserImageUrl = imageUrl
             };
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
@@ -154,10 +178,6 @@ namespace AuctionService.DIs.Services
             };
         }
 
-
-
-
-
-
+        
     }
 }

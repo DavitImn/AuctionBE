@@ -11,5 +11,7 @@
         public ItemOutputDto Item { get; set; }
         public int? WinnerId { get; set; } // ✅ Include this to show the winner (if auction is closed)
         public int MinimumBidIncrement { get; set; } // ✅ Include this to show bidding rules
+        public bool IsDeleted { get; set; } = false; // True After One Week From End of Auction 
+
     }
 }

@@ -9,6 +9,6 @@ namespace AuctionService.DIs.Interfaces
         Task<List<AuctionOutputDto>> GetUserAuctionsAsync(int userId);
         Task<AuctionOutputDto> GetAuctionByIdAsync(int auctionId);
         Task<List<AuctionOutputDto>> FilterAuctionsAsync(string? category, decimal? minPrice, decimal? maxPrice, string? sortOrder);
-
+        Task<List<AuctionOutputDto>> GetAllAuctionAsync();
     }
 }

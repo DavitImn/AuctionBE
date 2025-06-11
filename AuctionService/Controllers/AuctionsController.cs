@@ -43,6 +43,14 @@ namespace AuctionService.Controllers
             return Ok(auctions);
         }
 
+        [AllowAnonymous]
+        [HttpGet("all-auctions")]
+        public async Task<IActionResult> GetAllAuctionAsync()
+        {
+            var auctions = await _Auction.GetAllAuctionAsync();
+            return Ok(auctions);
+        }
+
         [Authorize]
         [HttpGet("my-auctions")]
         public async Task<IActionResult> GetMyAuctions()
