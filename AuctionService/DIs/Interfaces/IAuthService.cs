@@ -10,5 +10,6 @@ namespace AuctionService.DIs.Interfaces
         Task VerifyAsync(string email, int verifyCode);
         Task<JwtTokenModel> LoginAsync(LoginRequestModel request, string ipAddress);
         Task<JwtTokenModel> RefreshToken(RefreshTokenRequest refreshToken, string ipAddress);
+        Task<string> SaveUserImageAsync(IFormFile image);
     }
 }

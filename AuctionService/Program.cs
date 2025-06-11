@@ -12,6 +12,7 @@ using AuctionService.Validators;
 using AuctionService.DIs.Services;
 using AuctionService.DIs.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
+using AuctionService.SignalRFolder;
 
 
 namespace AuctionService
@@ -159,6 +160,7 @@ namespace AuctionService
             builder.Services.AddScoped<IAuctionNotificationService, AuctionNotificationService>();
             builder.Services.AddValidatorsFromAssemblyContaining<CreateAuctionDtoValidator>();
             builder.Services.AddValidatorsFromAssemblyContaining<BidCreateDtoValidator>();
+            builder.Services.AddScoped<IBuyNowService, BuyNowService>();
 
 
 
@@ -176,13 +178,15 @@ namespace AuctionService
                 app.UseSwaggerUI();
             }
 
+           
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();
             app.MapControllers();
-
+            app.MapHub<AuctionHub>("/auctionHub");
             app.Run();
         }
     }

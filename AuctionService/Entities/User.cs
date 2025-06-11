@@ -12,6 +12,7 @@ namespace AuctionService.Entities
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool IsEmailConfirmed { get; set; } = false;
+        public string? UserImageUrl { get; set; }
         public DateTime RegistrationDate { get; set; } = DateTime.Now;
         public Roles Role { get; set; }
         public bool IsDeleted { get; set; }
@@ -20,5 +21,6 @@ namespace AuctionService.Entities
         public List<Item> ItemsForSale { get; set; } = new();
         public List<Bid> Bids { get; set; } = new();
         public List<Auction> WonAuctions { get; set; } = new();
+        public ICollection<BuyNow> BuyNowPurchases { get; set; } = new List<BuyNow>();
     }
 }

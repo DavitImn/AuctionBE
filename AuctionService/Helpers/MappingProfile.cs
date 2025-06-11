@@ -30,6 +30,9 @@ namespace AuctionService.Helpers
            .ForMember(dest => dest.BidId, opt => opt.MapFrom(src => src.Id))
            .ForMember(dest => dest.BidderName, opt => opt.MapFrom(src => src.Bidder.FirstName)); // Assuming you have a navigation property
 
+            CreateMap<BuyNow, BuyNowOutputDto>()
+           .ForMember(dest => dest.Id, opt => opt.MapFrom(src => src.Id))
+           .ForMember(dest => dest.BuyerName, opt => opt.MapFrom(src => src.Buyer.FirstName));
         }
 
     }

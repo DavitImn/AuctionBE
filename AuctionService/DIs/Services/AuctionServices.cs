@@ -74,6 +74,17 @@ namespace AuctionService.DIs.Services
 
             return _mapper.Map<List<AuctionOutputDto>>(auctions);
         }
+        public async Task<List<AuctionOutputDto>> GetAllAuctionAsync()
+        {
+            var auctions = await _context.Auctions
+                .Include(a => a.Item)
+                    .ThenInclude(i => i.Category)
+                .Include(a => a.Item.Seller)
+                .Where(a => a.IsDeleted != true)
+                .ToListAsync();
+
+            return _mapper.Map<List<AuctionOutputDto>>(auctions);
+        }
         public async Task<List<AuctionOutputDto>> GetUserAuctionsAsync(int userId)
         {
             var auctions = await _context.Auctions

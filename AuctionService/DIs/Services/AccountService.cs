@@ -30,7 +30,8 @@ namespace AuctionService.DIs.Services
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 Role = user.Role,
-                RegistrationDate = user.RegistrationDate
+                RegistrationDate = user.RegistrationDate,
+                UserImageUrl = user.UserImageUrl,
             };
         }
     }

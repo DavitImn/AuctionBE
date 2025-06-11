@@ -108,6 +108,35 @@ namespace AuctionService.Migrations
                     b.ToTable("Bids");
                 });
 
+            modelBuilder.Entity("AuctionService.Entities.BuyNow", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("AuctionId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("BuyerId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("PurchaseTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AuctionId");
+
+                    b.HasIndex("BuyerId");
+
+                    b.ToTable("BuyNows");
+                });
+
             modelBuilder.Entity("AuctionService.Entities.Category", b =>
                 {
                     b.Property<int>("Id")
@@ -244,6 +273,9 @@ namespace AuctionService.Migrations
                     b.Property<int>("Role")
                         .HasColumnType("int");
 
+                    b.Property<string>("UserImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -291,6 +323,25 @@ namespace AuctionService.Migrations
                     b.Navigation("Auction");
 
                     b.Navigation("Bidder");
+                });
+
+            modelBuilder.Entity("AuctionService.Entities.BuyNow", b =>
+                {
+                    b.HasOne("AuctionService.Entities.Auction", "Auction")
+                        .WithMany()
+                        .HasForeignKey("AuctionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AuctionService.Entities.User", "Buyer")
+                        .WithMany("BuyNowPurchases")
+                        .HasForeignKey("BuyerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Auction");
+
+                    b.Navigation("Buyer");
                 });
 
             modelBuilder.Entity("AuctionService.Entities.Item", b =>
@@ -341,6 +392,8 @@ namespace AuctionService.Migrations
             modelBuilder.Entity("AuctionService.Entities.User", b =>
                 {
                     b.Navigation("Bids");
+
+                    b.Navigation("BuyNowPurchases");
 
                     b.Navigation("ItemsForSale");
 
