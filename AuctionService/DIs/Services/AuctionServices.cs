@@ -23,6 +23,21 @@ namespace AuctionService.DIs.Services
             _env = env;
             _mapper = mapper;
         }
+
+        public async Task<bool> EditauctionAsync(int userId , AuctionOutputDto dto) 
+        {
+            var auction = await _context.Items
+             .Include(i => i.Auction)
+             .FirstOrDefaultAsync(i => i.Id == dto.AuctionId && i.SellerId == userId);
+
+            if (auction.Auction.Status != null)
+                throw new InvalidOperationException("Auction Should Be Canceled Before Edit");
+
+
+
+            return true;
+        }
+
         public async Task<bool> CreateAuctionAsync(int userId, CreateAuctionDto dto)
         {
             // ✅ Validate the DTO using FluentValidation
@@ -39,6 +54,8 @@ namespace AuctionService.DIs.Services
             var item = await _context.Items
                 .Include(i => i.Auction)
                 .FirstOrDefaultAsync(i => i.Id == dto.ItemId && i.SellerId == userId);
+
+
 
             if (item == null)
                 throw new UnauthorizedAccessException("You are not the owner of this item.");
@@ -96,7 +113,6 @@ namespace AuctionService.DIs.Services
 
             return _mapper.Map<List<AuctionOutputDto>>(auctions);
         }
-
         public async Task<AuctionOutputDto> GetAuctionByIdAsync(int auctionId)
         {
             var auction = await _context.Auctions
@@ -107,7 +123,6 @@ namespace AuctionService.DIs.Services
 
             return _mapper.Map<AuctionOutputDto>(auction);
         }
-
         public async Task<List<AuctionOutputDto>> FilterAuctionsAsync(string? category, decimal? minPrice, decimal? maxPrice, string? sortOrder)
         {
             var query = _context.Auctions
