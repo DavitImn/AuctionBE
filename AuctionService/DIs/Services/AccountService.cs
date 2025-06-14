@@ -17,22 +17,16 @@ namespace AuctionService.DIs.Services
         {
             var user = await _context.Users
                 .Include(u => u.RefreshTokens)
+                .Include(u => u.WonAuctions)
+                .Include(u => u.BuyNowPurchases)
+                .Include(u => u.Bids)
+                .Include(u => u.ItemsForSale)
                 .FirstOrDefaultAsync(u => u.Id == userId);
 
             if (user == null)
                 throw new Exception("User not found");
 
-            return new User
-            {
-                Id = user.Id,
-                Email = user.Email,
-                UserName = user.UserName,
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Role = user.Role,
-                RegistrationDate = user.RegistrationDate,
-                UserImageUrl = user.UserImageUrl,
-            };
+            return user;
         }
     }
 }

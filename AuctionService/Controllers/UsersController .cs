@@ -18,27 +18,16 @@ namespace AuctionService.Controllers
         }
 
         [Authorize]
-        [HttpGet("profile/{userId}")]
-        public async Task<IActionResult> GetProfile(int userId)
+        [HttpGet("user-profile")]
+        public async Task<IActionResult> GetProfile()
         {
-            var currentUserId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
-            var currentUserRole = User.FindFirst(ClaimTypes.Role)?.Value;
+            var idClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(idClaim)) return Unauthorized();
 
-            // ✅ Allow only the logged-in user or an admin
-            if (currentUserId != userId && currentUserRole != "Admin")
-            {
-                return Forbid("You are not authorized to view this profile.");
-            }
 
-            try
-            {
-                var profile = await _accountService.GetUserProfileAsync(userId);
-                return Ok(profile);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new { error = ex.Message });
-            }
+            int loginedUser = int.Parse(idClaim);
+            var auctions = await _accountService.GetUserProfileAsync(loginedUser);
+            return Ok(auctions);
         }
 
     }

@@ -19,6 +19,20 @@ namespace AuctionService.Controllers
             _Auction = auctionService;
         }
 
+        [HttpGet("Search")]
+        public async Task<IActionResult> SearchAuctionAsync(string search) 
+        {
+            var auctionList = await _Auction.SearchAuctionsAsync(search);
+
+            if (auctionList.Any())
+            {
+                return Ok(auctionList);
+            }
+
+            return BadRequest($"Auction Did't Found By{search}");
+            
+        }
+
 
         [Authorize]
         [HttpPost("auction")]

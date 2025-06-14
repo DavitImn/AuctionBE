@@ -38,6 +38,28 @@ namespace AuctionService.DIs.Services
             return true;
         }
 
+        public async Task<List<AuctionOutputDto>> SearchAuctionsAsync(string search)
+        {
+            var query =  _context.Auctions
+                .Include(a => a.Item)
+                    .ThenInclude(i => i.Category)
+                .Include(a => a.Item.Seller)
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(a => a.Item.Title.ToLower().Contains(search.ToLower()));
+            }
+
+            if (query == null)
+            {
+                throw new Exception("No Found");
+            }
+
+            var result = await query.ToListAsync();
+            return _mapper.Map<List<AuctionOutputDto>>(result);
+        }
+
         public async Task<bool> CreateAuctionAsync(int userId, CreateAuctionDto dto)
         {
             // ✅ Validate the DTO using FluentValidation
